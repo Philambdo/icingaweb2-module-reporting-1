@@ -5,8 +5,8 @@ namespace Icinga\Module\Reporting\Web\Forms;
 
 use Icinga\Authentication\Auth;
 use Icinga\Module\Reporting\Database;
-use Icinga\Module\Reporting\DivDecorator;
 use Icinga\Module\Reporting\ProvidedReports;
+use Icinga\Module\Reporting\Web\DivDecorator;
 use ipl\Html\Form;
 use ipl\Html\FormElement\SubmitElementInterface;
 
@@ -14,6 +14,9 @@ class ReportForm extends Form
 {
     use Database;
     use ProvidedReports;
+
+    /** @var bool Hack to disable the {@link onSuccess()} code upon deletion of the report */
+    protected $callOnSuccess;
 
     protected $id;
 
@@ -36,7 +39,13 @@ class ReportForm extends Form
         $this->addElement('select', 'timeframe', [
             'required'  => true,
             'label'     => 'Timeframe',
-            'options'   => [null => 'Please choose'] + $this->listTimeframes()
+            'options'   => [null => 'Please choose'] + $this->listTimeframes(),
+            'class'     => 'autosubmit'
+        ]);
+
+        $this->addElement('select', 'template', [
+            'label'     => 'Template',
+            'options'   => [null => 'Please choose'] + $this->listTemplates()
         ]);
 
         $this->addElement('select', 'reportlet', [
@@ -80,6 +89,7 @@ class ReportForm extends Form
 
                 // Stupid cheat because ipl/html is not capable of multiple submit buttons
                 $this->getSubmitButton()->setValue($this->getSubmitButton()->getButtonLabel());
+                $this->callOnSuccess = false;
                 $this->valid = true;
 
                 return;
@@ -96,6 +106,10 @@ class ReportForm extends Form
 
     public function onSuccess()
     {
+        if ($this->callOnSuccess === false) {
+            return;
+        }
+
         $db = $this->getDb();
 
         $values = $this->getValues();
@@ -109,6 +123,7 @@ class ReportForm extends Form
                 'name'         => $values['name'],
                 'author'       => Auth::getInstance()->getUser()->getUsername(),
                 'timeframe_id' => $values['timeframe'],
+                'template_id'  => $values['template'],
                 'ctime'        => $now,
                 'mtime'        => $now
             ]);
@@ -118,6 +133,7 @@ class ReportForm extends Form
             $db->update('report', [
                 'name'         => $values['name'],
                 'timeframe_id' => $values['timeframe'],
+                'template_id'  => $values['template'],
                 'mtime'        => $now
             ], ['id = ?' => $this->id]);
 

@@ -5,9 +5,10 @@ namespace Icinga\Module\Reporting\Web\Forms;
 
 use Icinga\Authentication\Auth;
 use Icinga\Module\Reporting\Database;
-use Icinga\Module\Reporting\DivDecorator;
 use Icinga\Module\Reporting\ProvidedActions;
 use Icinga\Module\Reporting\Report;
+use Icinga\Module\Reporting\Web\DivDecorator;
+use Icinga\Module\Reporting\Web\Flatpickr;
 use ipl\Html\Form;
 use ipl\Html\FormElement\SubmitElementInterface;
 use ipl\Html\FormElement\TextareaElement;
@@ -15,6 +16,7 @@ use ipl\Html\FormElement\TextareaElement;
 class ScheduleForm extends Form
 {
     use Database;
+    use DecoratedElement;
     use ProvidedActions;
 
     /** @var Report */
@@ -62,10 +64,11 @@ class ScheduleForm extends Form
             'monthly'  => 'Monthly'
         ];
 
-        $this->addElement('text', 'start', [
-            'required'  => true,
-            'label'     => 'Start',
-            'class'     => 'flatpickr'
+        $this->addDecoratedElement(new Flatpickr(), 'text', 'start', [
+            'required'         => true,
+            'label'            => 'Start',
+            'placeholder'      => 'Choose date and time',
+            'data-enable-time' => true
         ]);
 
         $this->addElement('select', 'frequency', [
