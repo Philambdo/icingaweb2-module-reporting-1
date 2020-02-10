@@ -26,11 +26,13 @@ INSERT INTO timeframe (name, title, start_time, end_time, ctime, mtime) VALUES
 CREATE TABLE IF NOT EXISTS report (
   id BIGSERIAL NOT NULL PRIMARY KEY,
   timeframe_id BIGINT NOT NULL,
+  template_id BIGINT NULL DEFAULT NULL,
   author varchar(255) NOT NULL,
   name varchar(255) NOT NULL UNIQUE,
   ctime NUMERIC(20) NOT NULL,
   mtime NUMERIC(20) NOT NULL,
   CONSTRAINT report_timeframe FOREIGN KEY (timeframe_id) REFERENCES timeframe (id)
+  CONSTRAINT report_template FOREIGN KEY (template_id) REFERENCES template (id)
 ); 
 
 CREATE TABLE IF NOT EXISTS reportlet (
@@ -66,6 +68,16 @@ CREATE TABLE IF NOT EXISTS schedule (
   mtime NUMERIC(20) NOT NULL,
   CONSTRAINT schedule_report FOREIGN KEY (report_id) REFERENCES report (id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ;
+
+CREATE TABLE IF NOT EXISTS template (
+  id BIGSERIAL NOT NULL PRIMARY KEY,
+  author varchar(255) NOT NULL,
+  name varchar(255) NOT NULL,
+  settings byteea NOT NULL,
+  ctime NUMERIC(20) NOT NULL,
+  mtime NUMERIC(20) NOT NULL,
+);
+
 
 -- CREATE TABLE share (
 --   id int(10) unsigned NOT NULL AUTO_INCREMENT,
